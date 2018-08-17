@@ -17,16 +17,16 @@ import models.validators.MessageValidator;
 import utils.DBUtil;
 
 /**
- * Servlet implementation class CreateServlet
+ * Servlet implementation class Update
  */
-@WebServlet("/create")
-public class CreateServlet extends HttpServlet {
+@WebServlet("/update")
+public class UpdateServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
-	public CreateServlet() {
+	public UpdateServlet() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
@@ -36,12 +36,12 @@ public class CreateServlet extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 	        throws ServletException, IOException {
-
 		String _token = (String) request.getParameter("_token");
 		if (_token != null && _token.equals(request.getSession().getId())) {
 			EntityManager em = DBUtil.createEntityManager();
 
-			Message m = new Message();
+			Message m = em.find(Message.class, (Integer) (request.getSession().getAttribute("message_id")));
+
 			String status = request.getParameter("status");
 			m.setStatus(status);
 
@@ -49,8 +49,8 @@ public class CreateServlet extends HttpServlet {
 			m.setContent(content);
 
 			Timestamp currentTime = new Timestamp(System.currentTimeMillis());
-			m.setCreated_at(currentTime);
 			m.setUpdated_at(currentTime);
+
 			List<String> errors = MessageValidator.validate(m);
 			if (errors.size() > 0) {
 				em.close();
@@ -58,15 +58,17 @@ public class CreateServlet extends HttpServlet {
 				request.setAttribute("_token", request.getSession().getId());
 				request.setAttribute("message", m);
 				request.setAttribute("errors", errors);
+				;
 
-				RequestDispatcher rd = request.getRequestDispatcher("WEB-INF/views/messages/new.jsp");
+				RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/messages/edit.jsp");
 				rd.forward(request, response);
 			} else {
 				em.getTransaction().begin();
-				em.persist(m);
 				em.getTransaction().commit();
-				request.getSession().setAttribute("flush", "新規タスク登録が完了しました。");
+				request.getSession().setAttribute("flush", "タスク更新が完了しました。");
 				em.close();
+
+				request.getSession().removeAttribute("message_id");
 
 				response.sendRedirect(request.getContextPath() + "/index");
 			}
