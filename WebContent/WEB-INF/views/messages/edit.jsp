@@ -3,6 +3,8 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <c:import url="../layout/app.jsp">
 	<c:param name="content">
+		<c:choose>
+		<c:when test="${message != null }">
 		<h2>id : ${message.id}のタスク編集ページ</h2>
 
 		<form method="POST" action="${pageContext.request.contextPath}/update">
@@ -12,9 +14,9 @@
 			<a href="${pageContext.request.contextPath}/index">一覧に戻る</a>
 		</p>
 		<p><a href="#" onclick="confirmDestroy();">このタスクを消去する</a></p>
-		<from method="POST" action="${pageContext.request.contextPath}/destroy">
+		<form method="POST" action="${pageContext.request.contextPath}/destroy">
 		<input type="hidden" name="_token" value="${_token}" />
-		</from>
+		</form>
 		<script>
 		function confirmDestroy(){
 			if(confirm("本当に削去してよろしいですか？")){
@@ -22,7 +24,10 @@
 			}
 		}
 		</script>
-
-
+            </c:when>
+            <c:otherwise>
+                <h2>お探しのデータは見つかりませんでした。</h2>
+            </c:otherwise>
+       </c:choose>
 	</c:param>
 </c:import>
